@@ -34,6 +34,21 @@ $ git clone https://github.com/ntrig-unicamp/P4R/.git
 
 After clone our repository, you should acess the P4R directory and modify the file main.py. In this file you can configure you traffic patterns, desired output ports, and all other necessary parameters to start the traffic generation. P4R will use your definitions to generate all configuration files and execution scripts, and after that you can start the traffic generation. Below we provide a description of available commands, parameters and how to use them.
 
+```python
+NameTrafficGenerator = P4RGenerator()
+  #instatiate the traffic generator with the name "NameTrafficGenerator"
+```
+```python
+NameTrafficGenerator.addGenerationPort(port)
+  #port (generation port on Tofino)
+```
+
+```python
+NameTrafficGenerator.addOutputPort(port, channel, bw)
+  #port (physical port)
+  #channel (port ID(D_P))
+  #bw (portBW)
+
 
 ## Example
 Next we provide some simple examples how to use P4R. 
