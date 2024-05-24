@@ -48,9 +48,9 @@ NameTrafficGenerator.addOutputPort(port, channel, bw)
   #port (physical port)
   #channel (port ID(D_P))
   #bw (portBW)
+```
 
-
-## Example
+#### Example
 Next we provide some simple examples how to use P4R. 
 
 
