@@ -50,7 +50,7 @@ NameTrafficGenerator.addOutputPort(port, channel, bw)
   #bw (portBW)
 ```
 
-#### Example
+## Examples
 Next we provide some simple examples how to use P4R. 
 
 
