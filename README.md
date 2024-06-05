@@ -1,6 +1,8 @@
 # P4 Replay (P4R): Reproducing Packet Traces and Stateful Connections at Line-Rate on Your P4-based Switch
 
-⚠️**This repository is in state of development**
+⚠️**This repository is in a state of development**
+
+[Update 05/May]: The code will be published next week, we are resolving minor issues regarding the user interface.
 
 ## About P4R:
 
