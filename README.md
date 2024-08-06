@@ -75,7 +75,19 @@ NameTrafficGenerator.addOutputPort(port, channel, bw)
 
 ### Functionalities
 After the basic configurations, you can start exploring P4R's features to generate traffic according to your needs. Below we list the available commands, and how to use them.
- 
+
+Defining the operation mode:
+```python
+myTG.generationMode(mode)		  	#define the operation mode, the modes can be "Client-PCAP, Client-TCP, Server-TCP, Internal" 
+```
+
+Defining the operation mode:
+```python
+#set the PCAP file to be sent, the parameters are the Pcap file, timestamp is a bool that define if the reproduction will follow the original timestamps, and if this boolean is false, the pcap will be repeated and you can definen a desired throughput in the last parameter.
+myTG.setPCAP("PCAP_FILE.pcap", timestamp, throughput)
+```
+⚠️ Note that if the timestamp parameters is set to true, the throughput cannot be defined.
+
 
 ## Examples
 Next we provide some simple examples how to use P4R. 
