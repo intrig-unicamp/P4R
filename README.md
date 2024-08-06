@@ -14,7 +14,9 @@ ___
 
 ## About P4R:
 
-P4 Replay (P4R) is as a high-end traffic generation tool able to reproduce real world traffic scnearios. P4R benefits from the Tofino traffic generation capabilities to replicate real-world traffic patterns while maintaining high performance and accuracy. The user/network tester can use P4R to reproduce pre-captured traces (i.e., PCAPs) and create stateful TCP connections at the Tofino line rate. 
+P4 Replay (P4R) is as a high-end traffic generation tool able to reproduce real world traffic scnearios. P4R benefits from the Tofino traffic generation capabilities to replicate real-world traffic patterns while maintaining high performance and accuracy. The user/network tester can use P4R to reproduce pre-captured traces (i.e., PCAPs) and create stateful TCP connections at the Tofino line rate.
+
+![Alt text](https://github.com/intrig-unicamp/P4R/tree/main/images/Screenshot from 2024-08-06 16-59-34.png) 
 
 ### P4R Opetation Modes
 P4R can be used in three configuration modes: client, server, or internal (See Figure Below). In client mode , P4R can reproduce PCAPs or establish TCP connections with a connected server; in server mode, P4R responds to TCP connections from connected clients; and in internal mode , P4R can send packet traces or TCP connections to test.
