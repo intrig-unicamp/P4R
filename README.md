@@ -2,7 +2,7 @@
 
 ⚠️**This repository is in a state of development**
 
-[Update 07/Aug]: We are improving the user interface, and some functionalities are not yet available in the interface (Just hard code).
+[Update Aug]: We are improving the user interface, and some functionalities are not yet available in the interface (Just hard code).
 
 ___
 <p align="center">
@@ -46,14 +46,22 @@ $ git clone https://github.com/ntrig-unicamp/P4R/.git
 
 After clone our repository, you should acess the P4R directory and modify the file main.py. In this file you can configure you traffic patterns, desired output ports, and all other necessary parameters to start the traffic generation. P4R will use your definitions to generate all configuration files and execution scripts, and after that you can start the traffic generation. Below we provide a description of available commands, parameters and how to use them.
 
+### Getting started
+First you need to define the traffic genrator object:
+
 ```python
 NameTrafficGenerator = P4RGenerator()
   #instatiate the traffic generator with the name "NameTrafficGenerator"
 ```
+Then you need to define some configurations parameters, independently of the used mode. This parameters allow P4R correctly configure traffic generation in the appropriate pipeline and ports.
 ```python
-NameTrafficGenerator.addGenerationPort(port)
-  #port (generation port on Tofino)
+NameTrafficGenerator.addGenerationPort(port) #port (generation port ID on Tofino)
+NameTrafficGenerator.definePipeline(1)
 ```
+:::warning
+Make sure that your defined generation port are in the defined pipeline. Furthermore, the ports to which you want to send the generated traffic must also be part of this same pipeline. For more information about pipelines and ports, please read the official Tofino switch documentation.
+:::
+
 
 ```python
 NameTrafficGenerator.addOutputPort(port, channel, bw)
@@ -66,13 +74,19 @@ NameTrafficGenerator.addOutputPort(port, channel, bw)
 Next we provide some simple examples how to use P4R. 
 
 
-### Reproducing a PCAP file at 30 Gbps
+### Reproducing a PCAP file using the timestamp mode
 ```python
 
-myTG = P4RGenerator()                             #instatiate the traffic generator
-myTG.addGenerationPort(68)                         #define the generation port
-myTG.addOutputPort(5, 160, "100G")                 #physical port, port ID(D_P), portBW
-myTG.generationMode("Client")
-myTG.setPCAP("myPCAP_example.pcap")
-myTG.setThroughput("30000")
+myTG = P4RGenerator()                    	#instatiate the traffic generator
 
+myTG.defineGenerationPort(68)            	#define ID of the generation port
+myTG.definePipeline(1)				      	    #define the pipeline that P4R will run
+
+myTG.addOutputPort(5, 160, "10G")         #physical port, port ID(D_P), portBW
+myTG.generationMode("Client-PCAP")		  	#define the operation mode
+
+#define how the pcap will be reproduced, in this case following the timestamps
+myTG.setPCAP("myPCAP_example.pcap", timestamp = True)	
+
+myTG.generate()	
+```
