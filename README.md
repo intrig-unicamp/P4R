@@ -58,9 +58,10 @@ Then you need to define some configurations parameters, independently of the use
 NameTrafficGenerator.addGenerationPort(port) #port (generation port ID on Tofino)
 NameTrafficGenerator.definePipeline(1)
 ```
-:::warning
-Make sure that your defined generation port are in the defined pipeline. Furthermore, the ports to which you want to send the generated traffic must also be part of this same pipeline. For more information about pipelines and ports, please read the official Tofino switch documentation.
-:::
+
+⚠️ Make sure that your defined generation port are in the defined pipeline. Furthermore, the ports to which you want to send the generated traffic must also be part of this same pipeline. For more information about pipelines and ports, please read the official Tofino switch documentation.
+
+After that, you can define the output port to send the generated traffic:
 
 
 ```python
@@ -69,6 +70,12 @@ NameTrafficGenerator.addOutputPort(port, channel, bw)
   #channel (port ID(D_P))
   #bw (portBW)
 ```
+
+ℹ️ In case of using internal mode, the output port does not need to be defined, and you should replace the port parameter with the ID of the recirculation port in the other pipeline.
+
+### Functionalities
+After the basic configurations, you can start exploring P4R's features to generate traffic according to your needs. Below we list the available commands, and how to use them.
+ 
 
 ## Examples
 Next we provide some simple examples how to use P4R. 
