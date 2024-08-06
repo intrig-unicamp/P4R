@@ -81,12 +81,18 @@ Defining the operation mode:
 myTG.generationMode(mode)		  	#define the operation mode, the modes can be "Client-PCAP, Client-TCP, Server-TCP, Internal" 
 ```
 
-Defining the operation mode:
+Defining the PCAP file:
 ```python
 #set the PCAP file to be sent, the parameters are the Pcap file, timestamp is a bool that define if the reproduction will follow the original timestamps, and if this boolean is false, the pcap will be repeated and you can definen a desired throughput in the last parameter.
 myTG.setPCAP("PCAP_FILE.pcap", timestamp, throughput)
 ```
 ⚠️ Note that if the timestamp parameters is set to true, the throughput cannot be defined.
+
+
+Creating a TCP flow:
+```python
+myTG.addTCPFlow(eth_src, eth_dst, ip_src, ip_dst, port_src, port_dst, window)		  	#add a new TCP flow to be started 
+```
 
 
 ## Examples
@@ -106,6 +112,22 @@ myTG.generationMode("Client-PCAP")		  	#define the operation mode
 
 #define how the pcap will be reproduced, in this case following the timestamps
 myTG.setPCAP("myPCAP_example.pcap", timestamp = True)	
+
+myTG.generate()	
+```
+### Creating a TCP connection in Client Mode
+```python
+
+myTG = P4RGenerator()                    	#instatiate the traffic generator
+
+myTG.defineGenerationPort(68)            	#define ID of the generation port
+myTG.definePipeline(1)				      	    #define the pipeline that P4R will run
+
+myTG.addOutputPort(5, 160, "10G")         #physical port, port ID(D_P), portBW
+myTG.generationMode("Client-TCP")		  	#define the operation mode
+
+#Creating a TCP flow with a window size of 1 packet of 1500 bytes
+myTG.addTCPFlow("11:11:11:11:11:11", "22:22:22:22:22:22", "192.168.0.1", "192.168.0.2", 3000, 5001, 1)
 
 myTG.generate()	
 ```
