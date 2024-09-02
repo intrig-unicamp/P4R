@@ -1,25 +1,33 @@
 killall bf_switchd
 killall run_switchd
 
-/home/admin12/bf-sde-9.12.0/run_switchd.sh -p reproPCAP &
-sleep 20
+
+
+bf_kdrv_mod_load $SDE_INSTALL
+
+/$SDE/../tools/p4_build.sh files/P4R_Generated_Code.p4
+
+
+
+/$SDE/run_switchd.sh -p P4R_Generated_Code &
+
+sleep 30
 
 
 #Config PORTS
-/home/admin12/bf-sde-9.12.0/run_bfshell.sh -f portConfig.txt 
+/$SDE/run_bfshell.sh -f files/portConfig.txt 
 
 #Config Registers
-/home/admin12/bf-sde-9.12.0/run_bfshell.sh -b loading2.py 
+/$SDE/run_bfshell.sh -b files/P4R_Register_Entries.py 
 
 sleep 10
 
 #Install RULES
-nohup python3 tableEntries.py > log &
+nohup python3 files/tableEntries.py > log &
 
 #rate-show
-/home/admin12/bf-sde-9.12.0/run_bfshell.sh -f view
+/$SDE/run_bfshell.sh -f files/view
 
-#python3 -m p4runtime_sh --grpc-addr 127.0.0.1:9090 \
-#  --device-id 0 --election-id 0,1 --config <p4info.txt>,<pipeline config>
+
 
 killall bf_switchd
