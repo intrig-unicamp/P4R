@@ -83,9 +83,9 @@ sudo pip3 install scapy
 To allow reviewers to observe the functionality of the P4R trace parser without requiring Tofino hardware, we provide a PCAP translation script. This script acts as the first stage of the P4R workflow.
 
 **Step 1: Generate the Register Configuration**
-P4R translates PCAP files into specific register entries to store the packet content directly on the switch memory. Run the generation script using the provided example PCAP (`testing.pcap`):
+P4R translates PCAP files into specific register entries to store the packet content directly on the switch memory. Run the generation script using the provided example PCAP (`testing.pcap`) and the expected output port:
 ```bash
-python3 generateFiles.py testing.pcap
+python3 generateFiles.py testing.pcap 135
 ```
 
 *Expected Result:* The script will successfully parse the PCAP and generate a new file named `configuration_file.py`. This auto-generated file translates the PCAP packets into Tofino register insertions, systematically loading packet sizes, timestamps, and payload values into pipeline structures. If you open the file, you will be able to see each of the packets of the pcap, translated in register entries like below:

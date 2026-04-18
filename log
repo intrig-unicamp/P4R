@@ -1,0 +1,21 @@
+/usr/local/lib/python3.10/dist-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+Subscribe attempt #1
+INFO:bfruntime_grpc_client:Subscribe attempt #1
+Subscribe response received 0
+INFO:bfruntime_grpc_client:Subscribe response received 0
+Received reproPCAP on GetForwarding on client 0, device 0
+INFO:bfruntime_grpc_client:Received reproPCAP on GetForwarding on client 0, device 0
+Binding with p4_name reproPCAP
+INFO:bfruntime_grpc_client:Binding with p4_name reproPCAP
+Binding with p4_name reproPCAP successful!!
+INFO:bfruntime_grpc_client:Binding with p4_name reproPCAP successful!!
+Using packet manipulation module: ptf.packet_scapy
+Connected to BF Runtime Server
+The target runs program  reproPCAP
+configure timer table
+Create packet
+enable pktgen port
+configure pktgen application
+configure packet buffer
+enable pktgen

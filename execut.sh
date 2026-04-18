@@ -1,7 +1,7 @@
 killall bf_switchd
 killall run_switchd
 
-/$SDE/../tools/p4_build.sh reproPCAP.p4
+/$SDE/../../tools/p4_build.sh reproPCAP.p4
 
 
 /$SDE/run_switchd.sh -p reproPCAP &

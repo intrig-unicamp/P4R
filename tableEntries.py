@@ -104,7 +104,7 @@ pktgen_port_cfg_table.entry_mod(
 print("configure pktgen application")
 data = pktgen_app_cfg_table.make_data([gc.DataTuple('timer_nanosec', 1),
                                 gc.DataTuple('app_enable', bool_val=False),
-                                gc.DataTuple('pkt_len', (pktlen - 6)),
+                                gc.DataTuple('pkt_len', (pktlen)),
                                 gc.DataTuple('pkt_buffer_offset', buff_offset),
                                 gc.DataTuple('pipe_local_source_port', src_port),
                                 gc.DataTuple('increment_source_port', bool_val=False),
@@ -128,7 +128,7 @@ print("configure packet buffer")
 pktgen_pkt_buffer_table.entry_mod(
   target,
   [pktgen_pkt_buffer_table.make_key([gc.KeyTuple('pkt_buffer_offset', buff_offset),
-                                  gc.KeyTuple('pkt_buffer_size', (pktlen - 6))])],
+                                  gc.KeyTuple('pkt_buffer_size', (pktlen))])],
   [pktgen_pkt_buffer_table.make_data([gc.DataTuple('buffer', bytearray(bytes(p)))])])   # p[6:]))])
 
 

@@ -154,7 +154,7 @@ for i, packet in enumerate(packets):
 packetSize_to_sid = {}
 
 for number, i in enumerate(set(packet_sizes)):
-	script.write(f"mir.cfg.entry_with_normal( sid = {number+1}, direction = 'BOTH', session_enable = True, ucast_egress_port = 130, ucast_egress_port_valid = 1, max_pkt_len = {i+24}).push()\n")
+	script.write(f"mir.cfg.entry_with_normal( sid = {number+1}, direction = 'BOTH', session_enable = True, ucast_egress_port = {sys.argv[2]}, ucast_egress_port_valid = 1, max_pkt_len = {i+24}).push()\n")
 	packetSize_to_sid[i] = number + 1
 
 
