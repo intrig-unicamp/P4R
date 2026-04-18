@@ -66,7 +66,7 @@ For the Python scripts to successfully process network configurations and for th
 Open the terminal in your Linux environment and execute the following commands:
 ```bash
 # Clone the repository
-git clone [https://github.com/YOUR_USERNAME/P4R.git](https://github.com/YOUR_USERNAME/P4R.git)
+git clone https://github.com/intrig-unicamp/P4R.git
 cd P4R
 
 # Install Python dependencies
@@ -87,7 +87,28 @@ P4R translates PCAP files into specific register entries to store the packet con
 python3 generateFiles.py testing.pcap
 ```
 
-*Expected Result:* The script will successfully parse the PCAP and generate a new file named `configuration_file.py`. This auto-generated file translates the PCAP packets into Tofino register insertions, systematically loading packet sizes, timestamps, and payload values into pipeline structures.
+*Expected Result:* The script will successfully parse the PCAP and generate a new file named `configuration_file.py`. This auto-generated file translates the PCAP packets into Tofino register insertions, systematically loading packet sizes, timestamps, and payload values into pipeline structures. If you open the file, you will be able to see each of the packets of the pcap, translated in register entries like below:
+```bash
+#packet0: 
+storage1.add(REGISTER_INDEX=0, f1=0x001b21a0)
+storage2.add(REGISTER_INDEX=0, f1=0x52d4ac1f)
+...
+time.add(REGISTER_INDEX=0, f1=0)
+
+
+#packet1: 
+storage1.add(REGISTER_INDEX=1, f1=0xac1f6b67)
+...
+time.add(REGISTER_INDEX=1, f1=148000)
+
+
+#packet2: 
+storage1.add(REGISTER_INDEX=2, f1=0x001b21a0)
+...
+time.add(REGISTER_INDEX=2, f1=68000)
+```
+
+Storage are the register that store the packet contents, and time is the register that store the time that the packet should be sent (if you are using the timer mode). This is the maximum step that you can do without a tofino switch. If you have access to a Tofino switch, then you can start the PCAP reproduction following the next steps.
 
 ---
 
