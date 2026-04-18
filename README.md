@@ -14,7 +14,8 @@ This repository is organized as follows to facilitate the evaluation process:
 5. **Installation:** Initial setup steps.
 6. **Minimal Test:** Execution in a simulated environment (Local PCAP translation).
 7. **Experiments:** Execution in the real environment (Intel Tofino Switch).
-8. **License:** Usage license.
+8. **Team:** Developing team and contributors.
+9. **License:** Usage license.
 
 ---
 
@@ -140,6 +141,18 @@ Start the PCAP reproduction by triggering the control script via `bfshell`:
 *Expected Result:* The switch will begin replaying the `testing.pcap` trace in a continuous loop. The traffic will be generated entirely inside the ASIC and transmitted out of the configured ports at the maximum possible hardware throughput.
 
 ---
+
+## Team
+
+* Francisco Germano Vogt
+* Leonardo Henrique Guimaraes
+* Zhiheng Yang
+* Fabricio Eduardo Rodriguez Cesen
+* Sergio Rossi Brito da Silva
+* Marcelo Caggiani Luielli
+* Chrysa Papagianni
+* Christian Esteve Rothenberg
+
 
 ## LICENSE
 
