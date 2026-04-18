@@ -1,0 +1,26 @@
+ucli
+pm
+port-add 5/- 100G NONE
+port-enb 5/-
+an-set 5/- 2 
+port-dis 5/-
+port-enb 5/-
+port-add 1/- 10G NONE
+port-enb 1/-
+an-set 1/- 2 
+port-dis 1/-
+port-enb 1/-
+port-add 2/- 10G NONE
+port-enb 2/-
+an-set 2/- 2 
+port-dis 2/-
+port-enb 2/-
+port-add 3/- 10G NONE
+port-enb 3/-
+an-set 3/- 2 
+port-dis 3/-
+port-enb 3/-
+port-loopback 5/- mac-near
+show
+exit
+exit
