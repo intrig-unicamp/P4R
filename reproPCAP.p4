@@ -7,32 +7,31 @@
 #endif
 
 #include "headers.p4"
-//#include "util.p4"
 
+/*************************************************************************
+ ************* C O N S T A N T S    A N D   T Y P E S  *******************
+**************************************************************************/
+
+// Ethernet packet field identifying a recirculation header
 const ether_type_t ETHERTYPE_REC = 16w0x9966;
-//const ether_type_t ETHERTYPE_IPV4 = 16w0x0800;
+// Ethernet type value for IPv4 header
+const ether_type_t ETHERTYPE_IPV4 = 16w0x0800;
 
-//const MirrorId_t session_ID2 = 10w0x12;
-
-
+// Used for mirroring logic
 typedef bit<8>  pkt_type_t;
+typedef bit<3> mirror_type_t;
+// Standard packet
 const pkt_type_t PKT_TYPE_NORMAL = 1;
+// Mirrored packet
 const pkt_type_t PKT_TYPE_MIRROR = 2;
 
-typedef bit<3> mirror_type_t;
 
+/*************************************************************************
+ ************************** H E A D E R S  *******************************
+**************************************************************************/
 
-header mirror_h {
-    pkt_type_t  pkt_type;
-}
-
-header mirror_bridged_metadata_h {
-    pkt_type_t pkt_type;
-}
-
-
+// Structure containing the PCAP packet
 header data_t{
-
 	bit<32> dataStorage1;
 	bit<32> dataStorage2;
 	bit<32> dataStorage3;
@@ -65,56 +64,23 @@ header data_t{
 	bit<32> dataStorage30;
 }
 
-
+// Header for recirculated packets: initial ingress time, total duration, and position
 header rec_h {
 	bit<32> initialTime;
 	bit<32> totalTime;
 	bit<16> position;
 }
 
-
-
+// Ordered packet headers structure; non-present headers are marked as invalid.
 struct headers {
-	//mirror_bridged_metadata_h bridged_md;
 	pktgen_timer_header_t     timer;
 	pktgen_port_down_header_t port_down;
 	ethernet_h    ethernet;
 	rec_h		rec;
 	data_t		data;
 }
-
-header extra_t {
-	bit<32> ext1;
-	bit<32> ext2;
-	bit<32> ext3;
-	bit<32> ext4;
-	bit<32> ext5;
-	bit<32> ext6;
-	//bit<32> ext7;
-	//bit<16> ext8;
-}
-
-struct headers_2 {
-	extra_t extra;
-}
-
-
-
-
-
-
-/*
-header mirror_h{
-    bit<8> mirror_type;
-}*/
-
-header emp_h {
-
-}
-
-
+// Metadata structure
 struct metadata_storage_t{
-
 	bit<16> position;
 	bit<8> recirculating;
 	bit<32> timeTotal;
@@ -126,12 +92,17 @@ struct metadata_storage_t{
 
 }
 
+/*************************************************************************
+ ****************** I N G R E S S   P A R S E R S  ***********************
+**************************************************************************/
+
 parser SwitchIngressParser(
   packet_in packet, 
   out headers hdr, 
   out metadata_storage_t md, 
   out ingress_intrinsic_metadata_t ig_intr_md) {
 
+// In this initial parser stage, the packet is automatically accepted if the generation header is missing.
 	state start {
 		packet.extract(ig_intr_md);
 		packet.advance(PORT_METADATA_SIZE);
@@ -142,24 +113,21 @@ parser SwitchIngressParser(
 			2 : parse_pktgen_timer;
 			3 : parse_pktgen_port_down;
 			4 : parse_pktgen_port_down;
-			default : reject;
+			default : parse_ethernet;
 		}
 	}
 
+// Aqui se extrai o pacote de geração e passa para o parser ethernet
   state parse_pktgen_timer {
       packet.extract(hdr.timer);
       transition parse_ethernet;
   }
 
-  /*state parse_ethernet {
-      packet.extract(hdr.ethernet);
-      transition accept;
-  }*/
-
+// Extracts the Ethernet header. If a recirculation header is present, it transitions to parser_rec; if it is a standard Ethernet packet, an IPv4 header is expected. Otherwise, the packet is rejected.
 	state parse_ethernet {
 		packet.extract(hdr.ethernet);
 		transition select(hdr.ethernet.ether_type) {
-            ETHERTYPE_REC:   parse_rec;   // Recirculation header
+            ETHERTYPE_REC:   parse_rec;
 			ETHERTYPE_IPV4: accept;
             default: reject;
         }
@@ -170,15 +138,13 @@ parser SwitchIngressParser(
 		transition accept;
     }
 
-
-  
-  state parse_pktgen_port_down {
+    state parse_pktgen_port_down {
       packet.extract(hdr.port_down);
       transition reject;
   }
 }
 
-
+// Deparser handles packet emission and mirroring. If the metadata mirror type is 2, it emits the mirrored packet according to the Session ID.
 control SwitchIngressDeparser(
       packet_out pkt,
       inout headers hdr,
@@ -190,16 +156,16 @@ control SwitchIngressDeparser(
 	apply {
 
 		pkt.emit(hdr);
-		//if(md.test == 2){
 		if(ig_intr_dprsr_md.mirror_type == 2){
 			mirror.emit(md.session_ID);
-			//mirror.emit<mirror_h>(md.session_ID, {md.pkt_type});	
 		}
-		//pkt.emit(hdr);
-
   }
 }
 
+
+/*************************************************************************
+ ****************** I N G R E S S   C O N T R O L  ***********************
+**************************************************************************/
 
 control SwitchIngress(
       inout headers hdr, 
@@ -247,50 +213,28 @@ control SwitchIngress(
 	Register <bit<32>, bit<16>> (32w45000)  storage29;
 	Register <bit<32>, bit<16>> (32w45000)  storage30;
 	
-
-
 	RegisterAction<bit<16>, bit<1>, bit<16>>(counter) counter_action = {
         void apply(inout bit<16> value, out bit<16> readvalue){
 			readvalue = value;			
 			if(value>4864){
 				value = 0;
 			}else{ value = value+1; }
-            //readvalue = value;
-			
-			//readvalue = value;
-			//value = value + 1;
-
 		}
 	};
 
 
 	RegisterAction<bit<32>, bit<16>, bit<1>>(timer) timer_action = {
         void apply(inout bit<32> value, out bit<1> readvalue){
-
-			/*if (md.timeDiff > value){
-                readvalue = 1;
-            }else {
-                readvalue = 0;
-            }*/
-
 			readvalue = 1;
-			
 		}
 	};
 
 	RegisterAction<bit<16>, bit<1>, bit<16>>(recirc) recirc_action = {
         void apply(inout bit<16> value, out bit<16> readvalue){
-			//value=1;
 			readvalue = value;			
 			if(value==0){
 				value=0;
-				//readvalue = 0;
 			}
-			//else{
-				//readvalue = 1;
-			//}
-			//readvalue = value;
-            
 		}
 	};
 
@@ -316,7 +260,7 @@ control SwitchIngress(
 
 
 
-
+// Writes the PCAP values to the packet
 	RegisterAction<bit<32>, bit<16>, bit<32>>(storage1) storage1_action = {
         void apply(inout bit<32> value, out bit<32> readvalue){
             readvalue = value;
@@ -503,7 +447,6 @@ control SwitchIngress(
 
   action drop() {
       ig_intr_dprsr_md.drop_ctl = 0x1;
-		//ig_intr_tm_md.ucast_egress_port = 131;
   }
 
 
@@ -512,26 +455,20 @@ control SwitchIngress(
          md.timeDiff = ig_intr_md.ingress_mac_tstamp[31:0] - hdr.rec.initialTime;
     }
 
-
+	// Action to recirculate the packet
 	action recirculate(){
-		//ig_intr_tm_md.ucast_egress_port = 68;
 		ig_intr_tm_md.ucast_egress_port = 196;
-		//ig_intr_tm_md.ucast_egress_port = 160;
-		//hdr.rec.num = hdr.rec.num + 1;      // using new header
     }
 
-
+	// Ation to send the pacekt, forwarding it to other recirculation port to be mirrored and then sent to the output port
 	action send(){
-		//ig_intr_tm_md.ucast_egress_port = 144;
 		ig_intr_tm_md.ucast_egress_port = 64;
 
 	}
 
-
+	// Action to get the session ID for the mirror, used to generate the output packet with correct size
 	action getSid(MirrorId_t correct){
-		
 		md.session_ID = correct;
-
 	}
 
 	table packet_size {
@@ -550,71 +487,50 @@ control SwitchIngress(
 
 	
 	apply {
-		//ig_intr_dprsr_md.mirror_type = 0x1;
-		//md.session_ID = 0x1;
-
-
 		ig_intr_dprsr_md.mirror_type = 1;
-			md.session_ID = 1;
-			md.pkt_type = 1;
+		md.session_ID = 1;
+		md.pkt_type = PKT_TYPE_NORMAL;
 
 
 		if(hdr.rec.isValid()){
 
 			comp_diff();
 
-			//md.timeTotal = timer_action.execute(hdr.rec.position);
-
 			if(timer_action.execute(hdr.rec.position)==1){
+				// Packet transmission:
 				send();
 				ig_intr_dprsr_md.mirror_type = 2;
 				md.test = 2;
-				md.pkt_type = 2;
-				//md.session_ID = 12;//testing
+				md.pkt_type = PKT_TYPE_MIRROR;
 				packet_size.apply();
-				hdr.rec.setInvalid();
-				hdr.ethernet.setInvalid();
-				hdr.timer.setInvalid();
-				//hdr.ethernet.ether_type = ETHERTYPE_IPV4;
-				//recirc_action_no.execute(0);
-
 			}else{
+				// Packet not ready for transmission;
 				ig_intr_dprsr_md.mirror_type = 1;
 				md.session_ID = 1;
 				recirculate();
-				//send();
-				//recirc_action_yes.execute(0);
-
 			}
-
-
 		}
 
 		else{
-
-			
-
-			//md.recirculating = recirc_action.execute(0);
 			if(recirc_action.execute(0)==0){
-			//if(true){
-				//ig_intr_dprsr_md.mirror_type = 0x0;
-				//hdr.ethernet.dst_addr[0:0] = md.recirculating[0:0];
+				// Not a packet to recirculate, drop
 				drop();
-
 			}else{
-				//ig_intr_dprsr_md.mirror_type = 0x0;
+				// Its time for the packet recirculated
+				// ellimimnation of the Tofino Packet generation header
+				hdr.timer.setInvalid();
 
 				md.position = counter_action.execute(0);
-			
-				
+
+				// add the recirculation header to the packet for packet identification and timestamps
 				hdr.rec.setValid();
 				hdr.rec.position = md.position;
 				hdr.rec.initialTime = ig_intr_md.ingress_mac_tstamp[31:0];
 
 				hdr.ethernet.ether_type = ETHERTYPE_REC;
 
+				// add the data header containing the data of the packet defined by the pcap
 				hdr.data.setValid();
-
 				hdr.data.dataStorage1 = storage1_action.execute(md.position);
 				hdr.data.dataStorage2 = storage2_action.execute(md.position);
 				hdr.data.dataStorage3 = storage3_action.execute(md.position);
@@ -645,66 +561,39 @@ control SwitchIngress(
 				hdr.data.dataStorage28 = storage28_action.execute(md.position);
 				hdr.data.dataStorage29 = storage29_action.execute(md.position);
 				hdr.data.dataStorage30 = storage30_action.execute(md.position);
-				recirculate();
-				//send();
 
+				// mark to recirculate the packet
+				recirculate();
 			}
 		}
-		//md.session_ID = ;
-		//ig_intr_dprsr_md.mirror_type = 2;
-      // No need for egress processing, skip it and use empty controls for egress.
-      ig_intr_tm_md.bypass_egress = 1w1;
+		// All packets, except for the mirrored ones that will actually be sent to the output port, will bypass the Egress pipeline
+    	ig_intr_tm_md.bypass_egress = 1w1;
   }
 }
 
+/*************************************************************************
+ ****************** E G R E S S   P A R S E R S  ***********************
+**************************************************************************/
 
-
-
-
-parser EmptyEgressParser(
+parser SwitchEgressParser(
         packet_in pkt,
-        out headers_2 hdr,
+        out headers hdr,
         out metadata_storage_t eg_md,
         out egress_intrinsic_metadata_t eg_intr_md) {
 
 
 	state start {
+		// Extraction of headers (to invalidate in Egress Block) and metadata
 		pkt.extract(eg_intr_md);
-		pkt.extract(hdr.extra);
+		pkt.extract(hdr.ethernet);
+		pkt.extract(hdr.rec);
 		transition accept;
 	}
-
-
-
-	/*
-    state start {
-		pkt.extract(eg_intr_md);
-		mirror_h mirror_md = pkt.lookahead<mirror_h>();
-		transition select(mirror_md.pkt_type) {
-            PKT_TYPE_MIRROR : parse_mirror_md;
-            PKT_TYPE_NORMAL : parse_bridged_md;
-            default : accept;
-        }
-        //transition accept;
-    }*/
-
-	state parse_bridged_md {
-        //pkt.extract(hdr.bridged_md);
-        transition accept;
-    }
-
-    state parse_mirror_md {
-        //mirror_h mirror_md;
-        //pkt.extract(mirror_md);
-        transition accept;
-    }
-
-
 }
 
-control EmptyEgressDeparser(
+control SwitchEgressDeparser(
         packet_out pkt,
-        inout headers_2 hdr,
+        inout headers hdr,
         in metadata_storage_t eg_md,
         in egress_intrinsic_metadata_for_deparser_t ig_intr_dprs_md) {
     apply {
@@ -712,34 +601,32 @@ control EmptyEgressDeparser(
 	}
 }
 
-control EmptyEgress(
-        inout headers_2 hdr,
+
+/*************************************************************************
+ ****************** E G R E S S   C O N T R O L   ***********************
+**************************************************************************/
+
+
+control SwitchEgress(
+        inout headers hdr,
         inout metadata_storage_t eg_md,
         in egress_intrinsic_metadata_t eg_intr_md,
         in egress_intrinsic_metadata_from_parser_t eg_intr_md_from_prsr,
         inout egress_intrinsic_metadata_for_deparser_t ig_intr_dprs_md,
         inout egress_intrinsic_metadata_for_output_port_t eg_intr_oport_md) {
     apply {
-
-		//hdr.extra.setInvalid();
-		//hdr.timer.setInvalid();
-		//hdr.rec.setInvalid();
-
+		// Remotion of headers added previously
+		hdr.rec.setInvalid();
+		hdr.ethernet.setInvalid();
 	}
 }
-
-
-
-
-
-
 
 Pipeline(SwitchIngressParser(),
       SwitchIngress(),
       SwitchIngressDeparser(),
-      EmptyEgressParser(),
-      EmptyEgress(),
-      EmptyEgressDeparser()) pipe;
+      SwitchEgressParser(),
+      SwitchEgress(),
+      SwitchEgressDeparser()) pipe;
 
 Switch(pipe) main;
 
