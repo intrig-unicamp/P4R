@@ -26,60 +26,22 @@ interface.bind_pipeline_config(bfrt_info.p4_name_get())
 
 ####### You can now use BFRT CLIENT #######
 target = gc.Target(device_id=0, pipe_id=0xffff)
+
+# Retrieve table objects from the BFRT info
 t_cfg_table = bfrt_info.table_get("$mirror.cfg")
-#t_fwd_table = bfrt_info.table_get("t")
-#meter = bfrt_info.table_get("meter")
+pktgen_app_cfg_table = bfrt_info.table_get("app_cfg")
+pktgen_pkt_buffer_table = bfrt_info.table_get("pkt_buffer")
+pktgen_port_cfg_table = bfrt_info.table_get("port_cfg")
 
-# ####### t_table ########
-#print("clean timer table")
-#resp = t_fwd_table.entry_get(target, [], {"from_hw": True})
-#for _, key in resp:
-#  if key:
-#      t_fwd_table.entry_del(target, [key])
-
-
+# Application and Packet configuration parameters
 print("configure timer table")
 i_port = 68     # Default port for pktgen
 pipe_id = 0
 g_timer_app_id = 1
-batch_id = [0,1,2,3] # 0,1,2,3
-packet_id = [0,1] # 0,1
+batch_id = [0,1,2,3]
+packet_id = [0,1]
 o_port = 160     # HW port to send the packets
 
-#meter_cfg = []
-#meter_cfg.append([0,
-#                  1000000,
-#                  1000000,
-#                  1,
-#                  1])
-#meter.entry_add(
-#          target,
-#          [meter.make_key([gc.KeyTuple('$METER_INDEX', meter_cfg[0][0])])],
-#          [meter.make_data([gc.DataTuple('$METER_SPEC_CIR_KBPS', meter_cfg[0][1]),
-#                            gc.DataTuple('$METER_SPEC_PIR_KBPS', meter_cfg[0][2]),
-#                            gc.DataTuple('$METER_SPEC_CBS_KBITS', meter_cfg[0][3]),
-#                            gc.DataTuple('$METER_SPEC_PBS_KBITS', meter_cfg[0][4])],
-#                            None)])
-
-
-
-
-# for i in range(4):
-#     for j in range(2):
-#t_fwd_table.entry_add(
-# target,
-#  [t_fwd_table.make_key([ gc.KeyTuple('ig_intr_md.ingress_port', i_port),
-#                      gc.KeyTuple('hdr.timer.pipe_id', pipe_id),
-#                      gc.KeyTuple('hdr.timer.app_id', g_timer_app_id),
-#                      gc.KeyTuple('hdr.timer.batch_id', batch_id[0]),
-#                      gc.KeyTuple('hdr.timer.packet_id', packet_id[0])])],
-#  [t_fwd_table.make_data([gc.DataTuple('port', o_port)],
-#                      'SwitchIngress.match')]
-#)
-
-pktgen_app_cfg_table = bfrt_info.table_get("app_cfg")
-pktgen_pkt_buffer_table = bfrt_info.table_get("pkt_buffer")
-pktgen_port_cfg_table = bfrt_info.table_get("port_cfg")
 
 app_id = g_timer_app_id
 pktlen = 1024
@@ -118,12 +80,13 @@ data = pktgen_app_cfg_table.make_data([gc.DataTuple('timer_nanosec', 1),
                                 gc.DataTuple('pkt_counter', 0),
                                 gc.DataTuple('trigger_counter', 0)],
                                 'trigger_timer_periodic')
+# Write the application configuration to the app_cfg table
 pktgen_app_cfg_table.entry_mod(
   target,
   [pktgen_app_cfg_table.make_key([gc.KeyTuple('app_id', g_timer_app_id)])],
   [data])
 
-
+# Upload the raw packet data to the Pktgen internal buffer
 print("configure packet buffer")
 pktgen_pkt_buffer_table.entry_mod(
   target,
@@ -132,6 +95,7 @@ pktgen_pkt_buffer_table.entry_mod(
   [pktgen_pkt_buffer_table.make_data([gc.DataTuple('buffer', bytearray(bytes(p)))])])   # p[6:]))])
 
 
+# Finally, enable the Pktgen application to start traffic generation
 print("enable pktgen")
 pktgen_app_cfg_table.entry_mod(
   target,
