@@ -23,8 +23,8 @@ nohup python3 tableEntries.py > log &
 /$SDE/run_bfshell.sh -f view
 
 
-#to start the generation, run in another terminal
-#/$SDE/run_bfshell.sh -b Start.py 
+#to start the generation, run in another terminal:
+#   /$SDE/run_bfshell.sh -b Start.py 
 
 killall bf_switchd
 killall run_switchd
