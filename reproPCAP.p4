@@ -117,7 +117,7 @@ parser SwitchIngressParser(
 		}
 	}
 
-// Aqui se extrai o pacote de geração e passa para o parser ethernet
+// Here the generation packet is extracted and passed to the Ethernet parser.
   state parse_pktgen_timer {
       packet.extract(hdr.timer);
       transition parse_ethernet;
